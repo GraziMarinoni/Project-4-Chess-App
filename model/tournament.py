@@ -1,3 +1,16 @@
+import os
+from tinydb import TinyDB
+
+directory_data = "../data"
+
+# Check if the directory exists
+if not os.path.exists(directory_data):
+    # If it doesn't exist, create it
+    os.makedirs(directory_data)
+players_db = TinyDB('../data/Players database.json')
+tournaments_db = TinyDB('../data/Tournaments database.json')
+
+
 class Tournament:
     def __init__(self, name, venue, start_date, end_date,
                  current_round, num_rounds=4):
@@ -13,25 +26,31 @@ class Tournament:
     def add_player(self, player):
         self.registered_players.append(player)
 
+    def entered_tournament(self):
+        # create a dic for tournament
+        return {
+            'name': self.name,
+            'venue': self.venue,
+            'start_date': self.start_date,
+            'end_date': self.end_date,
+            'num_rounds': self.num_rounds,
+            'current_round': self.current_round,
+            'description': self.description,
+            # 'registered_players': self.registered_players,
+        }
 
-class TournamentAttributes(Tournament):
-    def show_tournament_name(self):
-        print(f"\nThis is a {self.name}")
+    def adding_tournament(self):
+        # add tournament to database
+        tournaments_db.insert(self.entered_tournament())
+        print("Thank you! The tournament was added to the Chess club database")
 
-    def show_venue(self):
-        print(f"It's taking place in {self.venue}")
-
-    def show_start_date(self):
-        print(f"It will start on {self.start_date}")
-
-    def show_end_date(self):
-        print(f"It will end on {self.end_date}")
-
-    def show_num_rounds(self):
-        print(f"There are {self.num_rounds} rounds in this tournament")
-
-    def show_current_round(self):
-        print(f"This is round {self.current_round}")
-
+    @staticmethod
+    def load_tournaments():
+        # get data for all tournament from database
+        tournaments = []
+        tournaments_db.all()
+        for tournament in tournaments_db:
+            tournaments.append(tournament)
+        return tournaments
 
 
