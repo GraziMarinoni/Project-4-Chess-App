@@ -1,5 +1,5 @@
 import os
-from tinydb import TinyDB
+from tinydb import TinyDB, Query
 
 directory_data = "../data"
 

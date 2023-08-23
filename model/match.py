@@ -1,8 +1,8 @@
 class Match:
 
     def __init__(self, playerwhite, playerblack):
-        self.playerwhite = playerwhite
-        self.playerblack = playerblack
+        self.player_white = playerwhite
+        self.player_black = playerblack
         self.whitepoints = 0
         self.blackpoints = 0
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+
 
 class Round:
     def __init__(self, round_name, start_datetime, end_datetime):
@@ -9,6 +9,7 @@ class Round:
 
     def add_match(self, match):
         self.matches.append(match)
+
     def set_round(self):
         return [
             self.round_name,
@@ -20,11 +21,10 @@ class Round:
     def get_match_pairing(self, player_white, player_black):
         match = (
             [f"{player_white['first_name']} + ' ' + {player_white['last_name']}",
-            player_white["score"]],
+                player_white["score"]],
 
             [f"{player_black['first_name']} + ' ' + {player_black['last_name']}",
-            player_black["score"]]
+                player_black["score"]]
 
         )
         self.add_match(match)
-

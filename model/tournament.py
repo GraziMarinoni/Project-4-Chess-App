@@ -13,15 +13,15 @@ tournaments_db = TinyDB('../data/Tournaments database.json')
 
 class Tournament:
     def __init__(self, name, venue, start_date, end_date,
-                 current_round, num_rounds=4):
+                 current_round, registered_players, description, num_rounds=4):
         self.name = name
         self.venue = venue
         self.start_date = start_date
         self.end_date = end_date
         self.num_rounds = num_rounds
         self.current_round = current_round
-        self.registered_players = []
-        self.description = ""
+        self.registered_players = registered_players
+        self.description = description
 
     def add_player(self, player):
         self.registered_players.append(player)
@@ -36,10 +36,10 @@ class Tournament:
             'num_rounds': self.num_rounds,
             'current_round': self.current_round,
             'description': self.description,
-            # 'registered_players': self.registered_players,
+            'registered_players': self.registered_players,
         }
 
-    def adding_tournament(self):
+    def insert_tournament(self):
         # add tournament to database
         tournaments_db.insert(self.entered_tournament())
         print("Thank you! The tournament was added to the Chess club database")

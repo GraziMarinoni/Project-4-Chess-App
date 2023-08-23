@@ -1,5 +1,7 @@
 from view.userView import UserView
+from controller.tournamentController import TournamentController
+
 
 if __name__ == '__main__':
-    view = UserView()
-    view.show_main_menu()
+    test = TournamentController()
+    test.main_menu_start()
