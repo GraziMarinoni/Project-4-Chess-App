@@ -1,5 +1,5 @@
 import os
-from tinydb import TinyDB, Query
+from tinydb import TinyDB
 
 directory_data = "../data"
 
@@ -11,6 +11,9 @@ players_db = TinyDB('../data/Players database.json')
 
 
 class Player:
+    # def __new__(cls,  first_name, last_name, date_birth, national_identifier):
+    #     pass
+
     def __init__(self, first_name, last_name, date_birth, national_identifier):
         self.first_name = first_name
         self.last_name = last_name
@@ -29,14 +32,11 @@ class Player:
     def insert_player(self):
         # add player to database
         players_db.insert(self.entered_player())
-        print("Thank you! The player was added to the Chess club database")
+        print("\nThank you! The player was added to the Chess club database")
         print()
 
     @staticmethod
     def load_players():
         # get all players from database
-        players = []
         players_db.all()
-        for player in players_db:
-            players.append(player)
-        return players
+        return players_db.all()

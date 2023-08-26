@@ -1,5 +1,5 @@
 import os
-from tinydb import TinyDB
+from tinydb import TinyDB, Query
 
 directory_data = "../data"
 
@@ -23,9 +23,6 @@ class Tournament:
         self.registered_players = registered_players
         self.description = description
 
-    def add_player(self, player):
-        self.registered_players.append(player)
-
     def entered_tournament(self):
         # create a dic for tournament
         return {
@@ -44,6 +41,12 @@ class Tournament:
         tournaments_db.insert(self.entered_tournament())
         print("Thank you! The tournament was added to the Chess club database")
 
+    def search_tournament(title):
+        tournament = Query()
+        given_tournament = tournaments_db.search(tournament.name == title)[0]
+        # why list with zero ??
+        return given_tournament
+
     @staticmethod
     def load_tournaments():
         # get data for all tournament from database
@@ -52,5 +55,3 @@ class Tournament:
         for tournament in tournaments_db:
             tournaments.append(tournament)
         return tournaments
-
-
