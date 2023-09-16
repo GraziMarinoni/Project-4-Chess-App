@@ -1,4 +1,4 @@
-from controller.Controller import Controller
+from controller.tournamentController import Controller
 
 if __name__ == '__main__':
     # Main file call function.

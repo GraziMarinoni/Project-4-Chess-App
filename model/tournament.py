@@ -5,7 +5,7 @@ import re
 
 directory_data = "../data"
 
-# Check if the directory exists.
+# Check if the directory exists
 if not os.path.exists(directory_data):
     # If it doesn't exist, create it.
     os.makedirs(directory_data)

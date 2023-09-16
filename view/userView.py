@@ -2,7 +2,7 @@ from prettytable import PrettyTable
 
 
 class UserView:
-    # View model init
+    # View model init.
     def __init__(self):
         self.table = PrettyTable()
         self.table.vertical_char = "│"
