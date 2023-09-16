@@ -1,17 +1,21 @@
 import os
 from tinydb import TinyDB, Query
+from tinydb.operations import add
+import re
 
 directory_data = "../data"
 
-# Check if the directory exists
+# Check if the directory exists.
 if not os.path.exists(directory_data):
-    # If it doesn't exist, create it
+    # If it doesn't exist, create it.
     os.makedirs(directory_data)
 players_db = TinyDB('../data/Players database.json')
 tournaments_db = TinyDB('../data/Tournaments database.json')
+tournament = Query()
 
 
 class Tournament:
+    # Instantiate the tournament model
     def __init__(self, name, venue, start_date, end_date,
                  current_round, registered_players, description, num_rounds=4):
         self.name = name
@@ -22,9 +26,11 @@ class Tournament:
         self.current_round = current_round
         self.registered_players = registered_players
         self.description = description
+        self.rounds = []
+        self.paired_players = []
 
     def entered_tournament(self):
-        # create a dic for tournament
+        # Return a dictionary of the tournament
         return {
             'name': self.name,
             'venue': self.venue,
@@ -34,24 +40,41 @@ class Tournament:
             'current_round': self.current_round,
             'description': self.description,
             'registered_players': self.registered_players,
+            'rounds': [],
+            'paired_players': []
         }
 
     def insert_tournament(self):
-        # add tournament to database
+        # Add tournament to the tournaments database
         tournaments_db.insert(self.entered_tournament())
         print("Thank you! The tournament was added to the Chess club database")
 
     def search_tournament(title):
-        tournament = Query()
-        given_tournament = tournaments_db.search(tournament.name == title)[0]
-        # why list with zero ??
+        # Search and return tournament by a given name.
+        given_tournament = tournaments_db.search(tournament.name.matches(title, flags=re.IGNORECASE))[0]
         return given_tournament
+
+    def check_tournament(title):
+        # Check the tournaments database for a tournament by a given name and return Ture or False.
+        if tournaments_db.search(tournament.name.matches(title, flags=re.IGNORECASE)):
+            return True
+        else:
+            return False
+
+    def update_tournament(title, round, current_round, tour_pairs, end_date):
+        # Update an exciting tournament details after each round.
+        tournaments_db.update(add('rounds', round), tournament.name == title)
+        tournaments_db.update({'end_date': end_date}, tournament.name == title)
+        tournaments_db.update({'current_round': current_round}, tournament.name == title)
+        tournaments_db.update({'tour_pairs': tour_pairs}, tournament.name == title)
 
     @staticmethod
     def load_tournaments():
-        # get data for all tournament from database
-        tournaments = []
-        tournaments_db.all()
-        for tournament in tournaments_db:
-            tournaments.append(tournament)
-        return tournaments
+        # Get data for all tournaments from the tournaments database
+        return tournaments_db.all()
+
+    @staticmethod
+    def unfinished_tournaments():
+        # Search and return unfinished tournaments.
+        unfinished_tours = tournaments_db.search(tournament.end_date.matches("Not finished yet"))
+        return unfinished_tours

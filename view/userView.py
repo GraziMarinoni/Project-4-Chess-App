@@ -2,14 +2,17 @@ from prettytable import PrettyTable
 
 
 class UserView:
+    # View model init
     def __init__(self):
         self.table = PrettyTable()
+        self.table.vertical_char = "│"
+        self.table.horizontal_char = "─"
         # Creating headers for table
         self.player_headers = [
             "First name",
             "Last name",
             "Date of birth",
-            "National ID"
+            "National Identifier"
         ]
         self.tournament_headers = [
             "Name",
@@ -19,7 +22,8 @@ class UserView:
             "Number of rounds",
             "Current round",
             "Players",
-            "Description"
+            "Description",
+            "Rounds"
         ]
         self.match_headers = [
             "Player One",
@@ -35,6 +39,17 @@ class UserView:
             "VS",
             "Player Two",
             "Player Two - Score",
+        ]
+        self.tournament_rounds = [
+            "Round",
+            "Start Datetime",
+            "End Datetime",
+            "Match",
+            "Player One",
+            "Player One Score",
+            "Vs",
+            "Player Two",
+            "Player Two Score"
         ]
 
     @staticmethod
@@ -78,6 +93,17 @@ class UserView:
         print("\n")
         print(self.table.get_string(sortby="First name"))
 
+    def display_start_tournament(self, tour):
+        # shows a single player's details
+        self.table.clear()
+        self.table.header = False
+        self.table.add_column("tournament", [f"{tour['name']}, {tour['venue']}",
+                                             f"Start date and time {tour['start_date']}",
+                                             f"Round {tour['current_round']} of {tour['num_rounds']} "
+                                             ])
+        print(self.table)
+        self.table.header = True
+
     def display_tournament(self, tournament):
         # shows
         self.table.clear()
@@ -89,11 +115,10 @@ class UserView:
                 f"[{(player+1)}] {tournament['registered_players'][player]['first_name']} "
                 f"{tournament['registered_players'][player]['last_name']}")
             player += 1
-
         self.table.add_row([
                 tournament['name'], tournament['venue'], tournament['start_date'], tournament['end_date'],
                 tournament['num_rounds'], tournament['current_round'],
-                tournament_players, tournament['description'],
+                tournament_players, tournament['description'], tournament['rounds'],
             ])
         print("\n")
         print(self.table)
@@ -115,6 +140,7 @@ class UserView:
                 tournament["start_date"], tournament["end_date"],
                 tournament["num_rounds"], tournament["current_round"],
                 tournaments_players, tournament["description"],
+                tournament["rounds"],
             ])
         print("\n")
         print(self.table.get_string(sortby="Name"))
@@ -124,10 +150,16 @@ class UserView:
         self.table.clear()
         self.table.field_names = self.match_headers
         self.table.add_row([
-                match[0], match[1], "VS", match[2], match[3]
+                match[0], match[1], "  VS  ", match[2], match[3]
         ])
-
         print(self.table)
+
+    @staticmethod
+    def finished_match(match_num):
+        print(f"Who won match [{match_num+1}]")
+        print("[1] if player One won")
+        print("[2] if player Two won ")
+        print("[0] if it is a tie")
 
     def display_round(self, round):
         # shows a single round's details
@@ -135,8 +167,25 @@ class UserView:
         self.table.field_names = self.round_headers
         for match in round:
             self.table.add_row([
-                match[0], match[1], match[2], match[5] , match[3], match[4]
+                match[0], match[1], match[2], " VS ", match[3], match[4]
             ])
-
         print(self.table)
 
+    def display_tour_rounds(self, rounds):
+        self.table.clear()
+        self.table.field_names = self.tournament_rounds
+        for round in rounds:
+            match = 0
+            while match < len(round[3]):
+                self.table.add_row([
+                    round[0], round[1], round[2], (match + 1), round[3][match][0][0], round[3][match][0][1], " VS ",
+                    round[3][match][1][0], round[3][match][1][1]
+                ])
+
+                match += 1
+            #     Check me later on
+            if len(rounds) > 1 and (match-1) < len(round[3]):
+                self.table.add_row(["───────────", "──────────────────────", "──────────────────────",
+                                    "─────────", "──────────────────────", "──────────────────",
+                                    "─────────", "──────────────────────", "──────────────────"])
+        print(self.table)

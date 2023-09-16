@@ -1,7 +1,6 @@
-from view.userView import UserView
-from controller.tournamentController import TournamentController
-
+from controller.Controller import Controller
 
 if __name__ == '__main__':
-    test = TournamentController()
-    test.main_menu_start()
+    # Main file call function.
+    controller = Controller()
+    controller.main_menu_start()
