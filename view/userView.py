@@ -68,33 +68,33 @@ class UserView:
         print("8- Show the rounds of a given tournament ")
         print("9- Exit the application ")
 
-    def display_player(self, player):
-        # shows a single player's details
+    def display_player(self, player_details):
+        # Shows a single player's details - 1st name, last name, date of birth and national ID
         self.table.clear()
         self.table.field_names = self.player_headers
         self.table.add_row([
-                player[0], player[1], player[2], player[3]
+                player_details[0], player_details[1], player_details[2], player_details[3]
         ])
         print("\n")
         print(self.table)
 
     def display_all_players(self, players):
-        # shows table with players
+        # Shows table with players
         self.table.clear()
         self.table.field_names = self.player_headers
-        # item rep a player from the dic-db
-        for item in players:
+        for player_details in players:
             self.table.add_row([
-                item["first_name"],
-                item["last_name"],
-                item["date_birth"],
-                item["national_identifier"]
+                player_details["first_name"],
+                player_details["last_name"],
+                player_details["date_birth"],
+                player_details["national_identifier"]
             ])
         print("\n")
+        # Prints the table of players sorted alphabetically
         print(self.table.get_string(sortby="First name"))
 
     def display_start_tournament(self, tour):
-        # shows a single player's details
+        # Shows a single player's details
         self.table.clear()
         self.table.header = False
         self.table.add_column("tournament", [f"{tour['name']}, {tour['venue']}",
@@ -104,12 +104,10 @@ class UserView:
         print(self.table)
         self.table.header = True
 
-    def display_tournament(self, tournament):
-        # shows
-        self.table.clear()
-        self.table.field_names = self.tournament_headers
+    def tournament_table(self, tournament):
         tournament_players = []
         player = 0
+        # Appends the first and last names of a player into the new list
         while player < len(tournament['registered_players']):
             tournament_players.append(
                 f"[{(player+1)}] {tournament['registered_players'][player]['first_name']} "
@@ -120,33 +118,26 @@ class UserView:
                 tournament['num_rounds'], tournament['current_round'],
                 tournament_players, tournament['description'], tournament['rounds'],
             ])
+
+    def display_tournament(self, tournament):
+        # Shows the complete details of a tournament
+        self.table.clear()
+        self.table.field_names = self.tournament_headers
+        self.tournament_table(tournament)
         print("\n")
         print(self.table)
 
     def display_all_tournaments(self, tournaments):
-        # shows
+        # Shows the complete details of all tournaments
         self.table.clear()
         self.table.field_names = self.tournament_headers
         for tournament in tournaments:
-            tournaments_players = []
-            player = 0
-            while player < len(tournament['registered_players']):
-                tournaments_players.append(
-                    f"[{(player + 1)}] {tournament['registered_players'][player]['first_name']} "
-                    f"{tournament['registered_players'][player]['last_name']}")
-                player += 1
-            self.table.add_row([
-                tournament["name"], tournament["venue"],
-                tournament["start_date"], tournament["end_date"],
-                tournament["num_rounds"], tournament["current_round"],
-                tournaments_players, tournament["description"],
-                tournament["rounds"],
-            ])
+            self.tournament_table(tournament)
         print("\n")
         print(self.table.get_string(sortby="Name"))
 
     def display_match(self, match):
-        # shows a single match's details
+        # shows a single match details with both player's name and score
         self.table.clear()
         self.table.field_names = self.match_headers
         self.table.add_row([
@@ -161,30 +152,38 @@ class UserView:
         print("[2] if player Two won ")
         print("[0] if it is a tie")
 
-    def display_round(self, round):
-        # shows a single round's details
+    def display_round(self, round_details):
+        # shows a single round details with the match number and both player's name and score
         self.table.clear()
         self.table.field_names = self.round_headers
-        for match in round:
+        match_number = 0
+        for match in round_details:
+            match_number += 1
             self.table.add_row([
-                match[0], match[1], match[2], " VS ", match[3], match[4]
+                match_number, match[0], match[1], " VS ", match[2], match[3]
             ])
         print(self.table)
 
     def display_tour_rounds(self, rounds):
         self.table.clear()
         self.table.field_names = self.tournament_rounds
+        line_counter = 0
         for round in rounds:
+            line_counter += 1
             match = 0
             while match < len(round[3]):
+                # match represents complete round details as:
+                # round number = round[0], round start-datetime = round[1], round end-datetime = round[2]
+                # match number = (match + 1)
+                # player one = round[3][match][0][0] , player one score =  round[3][match][0][1]
+                # player two = round[3][match][1][0] , player two score = round[3][match][1][1]
                 self.table.add_row([
-                    round[0], round[1], round[2], (match + 1), round[3][match][0][0], round[3][match][0][1], " VS ",
-                    round[3][match][1][0], round[3][match][1][1]
+                    round[0], round[1], round[2], (match + 1),
+                    round[3][match][0][0], round[3][match][0][1], " VS ", round[3][match][1][0], round[3][match][1][1]
                 ])
-
                 match += 1
-            #     Check me later on
-            if len(rounds) > 1 and (match-1) < len(round[3]):
+
+            if line_counter < len(rounds):
                 self.table.add_row(["───────────", "──────────────────────", "──────────────────────",
                                     "─────────", "──────────────────────", "──────────────────",
                                     "─────────", "──────────────────────", "──────────────────"])

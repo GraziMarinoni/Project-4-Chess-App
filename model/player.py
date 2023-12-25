@@ -1,13 +1,15 @@
 import os
 from tinydb import TinyDB
 
-directory_data = "../data"
+# To get the current directory and then use the path to create the data directory
+directory_data = f"{os.path.dirname(__file__)}/../data"
 
 # Check if the directory exists
 if not os.path.exists(directory_data):
     # If it doesn't exist, create it.
     os.makedirs(directory_data)
-players_db = TinyDB('../data/Players database.json')
+# Creates the player's database in the data directory
+players_db = TinyDB(f"{directory_data}/Players database.json")
 
 
 class Player:
