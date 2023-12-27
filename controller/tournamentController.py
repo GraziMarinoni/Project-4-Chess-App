@@ -146,7 +146,7 @@ class Controller:
                 user_input = input(f"Please, type the tournament's {detail.lower()}: ", )
             tournament_details.append(user_input)
 
-        players_counter = 0
+        players_counter = 1
         while players_counter <= (int(tournament_details[2]) * 2):
             # loop to ask user to input as many players as the number of rounds x2
             print(f"Please, input player {players_counter} of {(int(tournament_details[2]) * 2)}: ")
@@ -178,34 +178,37 @@ class Controller:
 
     def start_tournament(self):
         # Show the user the unfinished tournaments and take their input to start a tournament.
-        self.view.display_all_tournaments(Tournament.unfinished_tournaments())
-        self.tour = self.search_tournament_input()
-        if self.tour:
-            #  displays the tournament banner
-            self.view.display_start_tournament(self.tour)
-            self.tournament_players = []
-            # Stores the completed rounds from the db in a new var to update it through the process !!!
-            self.completed_rounds = self.tour['rounds']
-            player = 0
-            # Store the tournament's players in a list in first + last names format.
-            while player < len(self.tour['registered_players']):
-                self.tournament_players.append(
-                    f"{self.tour['registered_players'][player]['first_name']} "
-                    f"{self.tour['registered_players'][player]['last_name']}")
-                player += 1
-            self.tour_pairs = self.tour['paired_players']
-            self.tournament_logic()
+        if not Tournament.unfinished_tournaments():
+            print("There is no tournament to be played. Please, create a new tournament in the main menu.")
+            input("\nPlease, press Enter to go back to the main menu\n")
+            self.main_menu_start()
+        else:
+            self.view.display_all_tournaments(Tournament.unfinished_tournaments())
+            self.tour = self.search_tournament_input()
+            if self.tour:
+                #  displays the tournament banner
+                self.view.display_start_tournament(self.tour)
+                self.tour_pairs = self.tour['paired_players']
+                self.player_score = self.tour['player_score']
+                self.tournament_logic()
 
     def tournament_logic(self):
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if self.tour['current_round'] <= int(self.tour['num_rounds']):
-            round_matches = []
             self.round = []
-
             user_input = input(f"\nPress Enter to start round [{self.tour['current_round']}] or "
                                f"type 'exit' to go back to the menu:\n")
             if user_input == "exit":
                 self.main_menu_start()
             else:
+                self.tournament_players = []
+                player = 0
+                # Store the tournament's players in a list in first + last names format.
+                while player < len(self.tour['registered_players']):
+                    self.tournament_players.append(
+                        f"{self.tour['registered_players'][player]['first_name']} "
+                        f"{self.tour['registered_players'][player]['last_name']}")
+                    player += 1
                 round_started = self.get_time()
                 if self.tour['current_round'] == 1:
                     self.round_one(self.tournament_players)
@@ -213,18 +216,17 @@ class Controller:
                     # Implement Swiss pairing for rounds beyond the first
                     self.other_rounds(self.tournament_players)
 
-                # self.round = [([player one, 0.0],[player two , 0.0]), ([player three,0.0],[player four , 0.0])]
                 self.view.display_round(self.round)
-                input("\nPress Enter to input the players' scores after finishing the round...")
+                input("\nPress Enter to input the players' scores after the round is finished...")
                 round_finished = self.get_time()
-
+                round_matches = []
                 match_number = 0
                 # Go through the round matches, displays them then updates the players' scores from the user input
                 while match_number < int(self.tour['num_rounds']):
                     self.view.display_match(self.round[match_number])
                     self.match_winner(match_number)
-                    finished_match = ([self.round[match_number][0], self.round[match_number][1]],
-                                      [self.round[match_number][2], self.round[match_number][3]])
+                    finished_match = (([self.round[match_number][0], self.round[match_number][1]],
+                                      [self.round[match_number][2], self.round[match_number][3]]))
                     round_matches.append(finished_match)
                     match_number += 1
 
@@ -235,30 +237,29 @@ class Controller:
                     matches=round_matches
                 )
                 self.view.display_round(self.round)
-                self.completed_rounds.append(completed_round.entered_round())
+
                 if self.tour['current_round'] < int(self.tour['num_rounds']):
+                    self.tour['current_round'] += 1
                     Tournament.update_tournament(self.tour['name'], [completed_round.entered_round()],
                                                  self.tour['current_round'],
-                                                 self.tour_pairs, "Not finished yet")
-                    self.tour['current_round'] += 1
+                                                 self.tour_pairs, self.player_score, "Not finished yet")
                 else:
                     Tournament.update_tournament(self.tour['name'], [completed_round.entered_round()],
                                                  self.tour['current_round'],
-                                                 self.tour_pairs, self.get_time())
+                                                 self.tour_pairs, self.player_score, self.get_time())
                     self.tour['current_round'] += 1
                 self.tournament_logic()
 
-        self.view.display_tour_rounds(self.completed_rounds)
+        self.view.display_tour_rounds(Tournament.search_tournament(self.tour['name'])['rounds'])
+        print(" This tournament has finished. Thank you for using this application")
         user_input = input("\nPress Enter to go back to the menu:\n")
         if user_input == "":
             self.main_menu_start()
 
     def other_rounds(self, players):
-
         players = sorted(players, key=lambda player: self.player_score[player], reverse=True)
-
         # Go through the sorted list of players to create pairs according to their score and matches before this round
-        while len(players) > 1:
+        while len(players) > 2:
             player_one = players[0]
             player_two = None
             # Try to find an opponent for player_one
@@ -272,8 +273,8 @@ class Controller:
                     break
             # If an opponent is found, pair them and remove them from the players list
             if opponent_found:
-                self.round.append((player_one, self.player_score[player_one], player_two,
-                                   self.player_score[player_two]))
+                self.round.append([player_one, self.player_score[player_one], player_two,
+                                   self.player_score[player_two]])
                 self.tour_pairs.append((player_one, player_two))
                 players.remove(player_one)
                 players.remove(player_two)
@@ -281,6 +282,10 @@ class Controller:
                 # If no opponent is found, move player_one to the end of the list and start over
                 players.append(player_one)
                 players.pop(0)
+        if len(players) == 2:
+            self.round.append([players[0], self.player_score[players[0]], players[1],
+                               self.player_score[players[1]]])
+            self.tour_pairs.append((players[0], players[1]))
 
     @staticmethod
     def check_pairing(player_one, player_two, matches):
@@ -307,7 +312,6 @@ class Controller:
             # Append the matches pairing for round one to an instance var to be used in the other functions.
             self.round.append([player_one[x], self.player_score[player_one[x]],
                                player_two[x], self.player_score[player_two[x]]])
-            #
             self.tour_pairs.append((player_one[x], player_two[x]))
             x += 1
 
@@ -318,11 +322,11 @@ class Controller:
             self.round[match][1] += 1.0
             self.player_score[self.round[match][0]] += 1.0
         elif user_input == "2":
-            self.round[match][2] += 1.0
+            self.round[match][3] += 1.0
             self.player_score[self.round[match][2]] += 1.0
         elif user_input == "0":
             self.round[match][1] += 0.5
-            self.round[match][2] += 0.5
+            self.round[match][3] += 0.5
             self.player_score[self.round[match][0]] += 0.5
             self.player_score[self.round[match][2]] += 0.5
         else:
@@ -330,7 +334,10 @@ class Controller:
 
     def show_rounds(self):
         self.view.display_all_tournaments(Tournament.load_tournaments())
-        self.view.display_tour_rounds(self.search_tournament_input()['rounds'])
+        if not self.search_tournament_input()['rounds']:
+            print("No round was played yet.")
+        else:
+            self.view.display_tour_rounds(self.search_tournament_input()['rounds'])
         input("\nPlease, press Enter to go back to the main menu\n")
         self.main_menu_start()
 
@@ -353,6 +360,7 @@ class Controller:
         self.main_menu_start()
 
     def show_given_tournament(self):
+        self.view.display_all_tournaments(Tournament.load_tournaments())
         tour = self.search_tournament_input()
         if tour:
             self.view.display_tournament(tour)

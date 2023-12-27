@@ -31,6 +31,7 @@ class Tournament:
         self.description = description
         self.rounds = []
         self.paired_players = []
+        self.player_score = {}
 
     def entered_tournament(self):
         # Returns a dictionary of the tournament
@@ -44,18 +45,14 @@ class Tournament:
             'description': self.description,
             'registered_players': self.registered_players,
             'rounds': [],
-            'paired_players': []
+            'paired_players': [],
+            'player_score': {},
         }
 
     def insert_tournament(self):
         # Add tournament to the tournaments database
         tournaments_db.insert(self.entered_tournament())
         print("Thank you! The tournament was added to the Chess club database")
-
-    def search_tournament(title):
-        # Search and return tournament by a given name.
-        given_tournament = tournaments_db.search(tournament.name.matches(title, flags=re.IGNORECASE))[-1]
-        return given_tournament
 
     def check_tournament(title):
         # Check the tournaments database for a tournament by a given name and return Ture or False.
@@ -64,12 +61,18 @@ class Tournament:
         else:
             return False
 
-    def update_tournament(title, round_details, current_round, tour_pairs, end_date):
+    def search_tournament(title):
+        # Search and return tournament by a given name.
+        given_tournament = tournaments_db.search(tournament.name.matches(title, flags=re.IGNORECASE))[-1]
+        return given_tournament
+
+    def update_tournament(title, round_details, current_round, tour_pairs, player_score, end_date):
         # Update an existing tournament details after each round.
         tournaments_db.update(add('rounds', round_details), tournament.name == title)
-        tournaments_db.update({'end_date': end_date}, tournament.name == title)
         tournaments_db.update({'current_round': current_round}, tournament.name == title)
         tournaments_db.update({'paired_players': tour_pairs}, tournament.name == title)
+        tournaments_db.update({'player_score': player_score}, tournament.name == title)
+        tournaments_db.update({'end_date': end_date}, tournament.name == title)
 
     @staticmethod
     def load_tournaments():

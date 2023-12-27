@@ -1,4 +1,3 @@
-
 class Round:
     # Round model init.
     def __init__(self, round_name, start_datetime, end_datetime, matches):

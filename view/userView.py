@@ -79,7 +79,7 @@ class UserView:
         print(self.table)
 
     def display_all_players(self, players):
-        # Shows table with players
+        # Shows table with all players sorted by first name alphabetically
         self.table.clear()
         self.table.field_names = self.player_headers
         for player_details in players:
@@ -94,7 +94,7 @@ class UserView:
         print(self.table.get_string(sortby="First name"))
 
     def display_start_tournament(self, tour):
-        # Shows a single player's details
+        # Shows the tournament banner when the user start the tournament
         self.table.clear()
         self.table.header = False
         self.table.add_column("tournament", [f"{tour['name']}, {tour['venue']}",
@@ -137,7 +137,7 @@ class UserView:
         print(self.table.get_string(sortby="Name"))
 
     def display_match(self, match):
-        # shows a single match details with both player's name and score
+        # shows a single match details with both players' names and scores
         self.table.clear()
         self.table.field_names = self.match_headers
         self.table.add_row([
