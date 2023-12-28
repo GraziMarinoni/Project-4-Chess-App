@@ -136,6 +136,15 @@ class UserView:
         print("\n")
         print(self.table.get_string(sortby="Name"))
 
+    def display_all_tournaments_names(self, tournaments):
+        # Shows the complete details of all tournaments
+        self.table.clear()
+        self.table.field_names = ["Tournament's Name"]
+        for tournament in tournaments:
+            self.table.add_row([tournament['name']])
+        print("\n")
+        print(self.table)
+
     def display_match(self, match):
         # shows a single match details with both players' names and scores
         self.table.clear()

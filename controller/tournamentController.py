@@ -188,12 +188,13 @@ class Controller:
             if self.tour:
                 #  displays the tournament banner
                 self.view.display_start_tournament(self.tour)
+                # loading details from db to be processed in the next stage
                 self.tour_pairs = self.tour['paired_players']
                 self.player_score = self.tour['player_score']
                 self.tournament_logic()
 
     def tournament_logic(self):
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # Check which round will be played
         if self.tour['current_round'] <= int(self.tour['num_rounds']):
             self.round = []
             user_input = input(f"\nPress Enter to start round [{self.tour['current_round']}] or "
@@ -211,20 +212,23 @@ class Controller:
                     player += 1
                 round_started = self.get_time()
                 if self.tour['current_round'] == 1:
+                    # If first round, will apply the logic for round one
                     self.round_one(self.tournament_players)
                 else:
-                    # Implement Swiss pairing for rounds beyond the first
+                    # Implements Swiss pairing for rounds beyond the first
                     self.other_rounds(self.tournament_players)
 
+                # Displays the matches for that round with the paired players
                 self.view.display_round(self.round)
                 input("\nPress Enter to input the players' scores after the round is finished...")
                 round_finished = self.get_time()
                 round_matches = []
                 match_number = 0
-                # Go through the round matches, displays them then updates the players' scores from the user input
+                # Displays the round matches, then updates the players' scores from the user input
                 while match_number < int(self.tour['num_rounds']):
                     self.view.display_match(self.round[match_number])
                     self.match_winner(match_number)
+                    # Creates a tuple with the final results for the match and append to round_matches list
                     finished_match = (([self.round[match_number][0], self.round[match_number][1]],
                                       [self.round[match_number][2], self.round[match_number][3]]))
                     round_matches.append(finished_match)
@@ -238,11 +242,13 @@ class Controller:
                 )
                 self.view.display_round(self.round)
 
+                # updates the details that changes in every round
                 if self.tour['current_round'] < int(self.tour['num_rounds']):
                     self.tour['current_round'] += 1
                     Tournament.update_tournament(self.tour['name'], [completed_round.entered_round()],
                                                  self.tour['current_round'],
                                                  self.tour_pairs, self.player_score, "Not finished yet")
+                # Last round
                 else:
                     Tournament.update_tournament(self.tour['name'], [completed_round.entered_round()],
                                                  self.tour['current_round'],
@@ -250,6 +256,7 @@ class Controller:
                     self.tour['current_round'] += 1
                 self.tournament_logic()
 
+        # Reloads the updated rounds and displays them at the end of the tournament
         self.view.display_tour_rounds(Tournament.search_tournament(self.tour['name'])['rounds'])
         print(" This tournament has finished. Thank you for using this application")
         user_input = input("\nPress Enter to go back to the menu:\n")
@@ -257,6 +264,7 @@ class Controller:
             self.main_menu_start()
 
     def other_rounds(self, players):
+        # Swiss pairing system
         players = sorted(players, key=lambda player: self.player_score[player], reverse=True)
         # Go through the sorted list of players to create pairs according to their score and matches before this round
         while len(players) > 2:
@@ -271,20 +279,21 @@ class Controller:
                     player_two = opponent
                     opponent_found = True
                     break
-            # If an opponent is found, pair them and remove them from the players list
+            # If an opponent is found, will pair and remove them from the players list to avoid re-matching
             if opponent_found:
-                self.round.append([player_one, self.player_score[player_one], player_two,
-                                   self.player_score[player_two]])
+                self.round.append([player_one, self.player_score[player_one],
+                                   player_two, self.player_score[player_two]])
                 self.tour_pairs.append((player_one, player_two))
                 players.remove(player_one)
                 players.remove(player_two)
             else:
-                # If no opponent is found, move player_one to the end of the list and start over
+                # If NO opponent is found, move player_one to the end of the list and start over
                 players.append(player_one)
                 players.pop(0)
         if len(players) == 2:
-            self.round.append([players[0], self.player_score[players[0]], players[1],
-                               self.player_score[players[1]]])
+            # the remaining 2 players will be paired automatically
+            self.round.append([players[0], self.player_score[players[0]],
+                               players[1], self.player_score[players[1]]])
             self.tour_pairs.append((players[0], players[1]))
 
     @staticmethod
@@ -316,6 +325,7 @@ class Controller:
             x += 1
 
     def match_winner(self, match):
+        # Defines winning, losing and tie scores
         self.view.finished_match(match)
         user_input = input()
         if user_input == "1":
@@ -333,7 +343,8 @@ class Controller:
             self.match_winner(match)
 
     def show_rounds(self):
-        self.view.display_all_tournaments(Tournament.load_tournaments())
+        # Loads and displays all rounds of a given tournament
+        self.view.display_all_tournaments_names(Tournament.load_tournaments())
         if not self.search_tournament_input()['rounds']:
             print("No round was played yet.")
         else:
@@ -342,25 +353,27 @@ class Controller:
         self.main_menu_start()
 
     def all_players(self):
-        # display all players stored in the database
+        # Displays all players stored in the database
         self.view.display_all_players(Player.load_players())
         input("\nPlease, press Enter to go back to the main menu\n")
         self.main_menu_start()
 
     def all_tournaments(self):
-        # display all new_tournaments stored in the database
+        # Displays all new_tournaments stored in the database
         self.view.display_all_tournaments(Tournament.load_tournaments())
         input("\nPlease, press Enter to go back to the main menu\n")
         self.main_menu_start()
 
     def show_registered_players(self):
-        self.view.display_all_tournaments(Tournament.load_tournaments())
+        # Shows players of a given tournament
+        self.view.display_all_tournaments_names(Tournament.load_tournaments())
         self.view.display_all_players(self.search_tournament_input()['registered_players'])
         input("\nPlease, press Enter to go back to the main menu\n")
         self.main_menu_start()
 
     def show_given_tournament(self):
-        self.view.display_all_tournaments(Tournament.load_tournaments())
+        # Displays all details of a given tournament
+        self.view.display_all_tournaments_names(Tournament.load_tournaments())
         tour = self.search_tournament_input()
         if tour:
             self.view.display_tournament(tour)
@@ -368,6 +381,7 @@ class Controller:
             self.main_menu_start()
 
     def search_tournament_input(self):
+        # Checks if the tournament exists in the db and returns it to the user
         user_input = input("Please, provide the tournament's name: ")
         print()
         if Tournament.check_tournament(user_input):
